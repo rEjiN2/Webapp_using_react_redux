@@ -1,41 +1,72 @@
 import Container from 'react-bootstrap/Container';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
-import NavDropdown from 'react-bootstrap/NavDropdown';
 import { Image } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
-import {logout,selectUser} from '../../features/userSlice'
+// import {login, selectUser} from '../../features/userSlice'
+import { change } from '../../features/usernameReducer';
+import { changeImage } from '../../features/userimageReducer';
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import axios from 'axios';
 function Headers() {
-  const user = useSelector(selectUser)
+ // const user = useSelector(selectUser);
+  
+  const obj = JSON.parse(localStorage.getItem('userInfo'))
   const dispatch = useDispatch();
   const navigate = useNavigate()
   const handleLogout = (e)=>{
     e.preventDefault();
-     dispatch(logout());
-      navigate('/')
+    //
+     localStorage.removeItem("userInfo")
+     navigate('/')
   }
+  
+  const handleProfile = ()=>{
+    navigate('/userProfile');
+  }
+     useEffect(()=>{
+
+        axios.get(`http://localhost:5000/api/users/userDetails/${obj._id}`).then((res)=>{
+          console.log(res['data'].name);
+          console.log(res['data'].image);
+          
+
+          dispatch(change(res['data'].name))
+          dispatch(changeImage(
+            res['data'].image
+          ))
+
+
+         
+        },[])
+
+
+     })
+     
+     const username = useSelector((state) => state.username)
+     const userImage = useSelector((state) => {
+      return state.userImage;
+
+  })
+  const homeRoute = ()=>{
+    navigate('/home')
+  }
+
+
+ 
+  
+  
   return (
     <Navbar bg="dark" expand="lg">
       <Container>
-      <Image src="https://w7.pngwing.com/pngs/831/88/png-transparent-user-profile-computer-icons-user-interface-mystique-miscellaneous-user-interface-design-smile-thumbnail.png"  style={{ width: '20px', height: '20px' }} alt="example image"  fluid />
-        <Navbar.Brand href="#home" style={{color:'white'}} >{user.name}</Navbar.Brand>
+      <Image src={userImage}  style={{ width: '50px', height: '50px' }} alt="example image"  fluid />
+        <Navbar.Brand href="#home" onClick={handleProfile} style={{color:'white'}} >{username}</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="me-auto">
-            <Nav.Link href="#home" style={{color:'white'}}>Home</Nav.Link>
-            {/* <Nav.Link href="#link">Link</Nav.Link> */}
-            {/* <NavDropdown title="Dropdown" id="basic-nav-dropdown">
-              <NavDropdown.Item href="#action/3.1">Action</NavDropdown.Item>
-              <NavDropdown.Item href="#action/3.2">
-                Another action
-              </NavDropdown.Item>
-              <NavDropdown.Item href="#action/3.3">Something</NavDropdown.Item>
-              <NavDropdown.Divider />
-              <NavDropdown.Item href="#action/3.4">
-                Separated link
-              </NavDropdown.Item>
-            </NavDropdown> */}
+          <Nav className="mr-auto">
+            <Nav.Link  onClick={()=>homeRoute()} style={{color:'white'}}>Home</Nav.Link>
+      
             <Nav.Link href="#home" style={{marginLeft:950,color:'white'}} onClick={(e)=>handleLogout(e)} >Logout</Nav.Link>
 
           </Nav>
@@ -46,14 +77,3 @@ function Headers() {
 }
 
 export default Headers;
-// import React from 'react'
-
-// function Headers() {
-//   return (
-//     <div>
-//         <h1>PACHA </h1>
-//     </div>
-//   )
-// }
-
-// export default Headers
